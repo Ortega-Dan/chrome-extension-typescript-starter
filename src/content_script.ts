@@ -1,11 +1,73 @@
+import * as $ from "jquery";
 
-chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-    if (msg.color) {
-        console.log('Receive color = ' + msg.color);
-        document.body.style.backgroundColor = msg.color;
-        sendResponse('Change color to ' + msg.color);
-    } else {
-        sendResponse('Color message is none.');
+$("body").keypress(function (event) {
+
+    var calendarTimeAdder = 0
+
+    if (event.ctrlKey === true && (event.key === "i" || event.key === "I"
+        || event.key === "k" || event.key === "K")) {
+
+        var requiredDayText: string
+
+        if (event.key === "i" || event.key === "I") {
+            var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            var todaysDate = new Date();
+            console.log("" + todaysDate)
+            requiredDayText = months[todaysDate.getMonth()] + " " + todaysDate.getDate() +
+                ", " + todaysDate.getFullYear()
+        }
+
+        if (event.key === "k" || event.key === "K") {
+            requiredDayText = prompt("What Month and Day do you want to check ?\n[From the week " +
+                "on screen and in the format Month day#]")
+        }
+
+        console.log(requiredDayText)
+
+
+        $("div.ynRLnc").each(function (index) {
+
+
+            var texto = $(this).text()
+
+
+
+            if (texto.indexOf(requiredDayText) > 0 && !(texto.indexOf("Lunch,") > 0)
+                && !(texto.indexOf("busy,") > 0) && !(texto.indexOf("cal.ignore") > 0)) {
+                console.log(index + ") " + texto)
+
+                var startDateTime = new Date("01/01/2000 " + texto.substring(0, 5));
+                var endDateTime = new Date("01/01/2000 " + texto.substring(9, 14));
+
+
+                var startMinute = (startDateTime.getHours() * 60) + startDateTime.getMinutes()
+                var endMinute = (endDateTime.getHours() * 60) + endDateTime.getMinutes()
+
+
+                // console.log(startMinute)
+                // console.log(endMinute)
+
+                let hoursLength = (endMinute - startMinute) / 60
+                console.log("Hours: " + hoursLength)
+                calendarTimeAdder += hoursLength
+
+            }
+        })
+
+        if (requiredDayText == "" || calendarTimeAdder === 0) {
+            alert("No times found for filter [" + requiredDayText + "]")
+        } else {
+            alert("[" + requiredDayText + "]\n\n" + calendarTimeAdder + " hours worked")
+
+            if ((8 - calendarTimeAdder) < 0) {
+                alert("[" + requiredDayText + "]\n\nYou've worked " + (8 - calendarTimeAdder) * -1 + " extra hours")
+            } else {
+                alert("[" + requiredDayText + "]\n\nOnly " + (8 - calendarTimeAdder) + " hours missing")
+            }
+        }
+
+        console.log("Done ******\n\n")
     }
-});
 
+})
